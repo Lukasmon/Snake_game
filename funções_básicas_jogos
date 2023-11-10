@@ -1,0 +1,82 @@
+import pygame
+from pygame.locals import *
+from sys import exit
+from random import randint
+
+
+# Inicializando código com as variáveis necessárias --
+
+pygame.init()
+
+largura_tela = 600
+altura_tela = 400
+x_qua = 300
+y_qua = 200
+diametro_do_circulo = 20
+x_comeco_linha = 1
+y_comeco_linha = 600
+
+    #Randomizando retângulo azul --
+
+x_azul = randint(50, 550)
+y_azul = randint(50, 350)
+
+
+    #Velocidade do jogo/ Tamanho da tela/ Nome do jogo --
+
+relogio = pygame.time.Clock()
+tela = pygame.display.set_mode((largura_tela, altura_tela))
+pygame.display.set_caption('Joguinho bolado')
+
+
+
+#laço de repetição --
+
+while True:
+
+    relogio.tick(100)
+
+
+    #Cor da tela --
+
+    tela.fill((50,150,100))
+
+    #sair do jogo --
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            exit()
+
+    #Movimentação no jogo --
+    if pygame.key.get_pressed()[K_a]:
+        x_qua = x_qua - 5
+    if pygame.key.get_pressed()[K_d]:
+        x_qua = x_qua + 5
+    if pygame.key.get_pressed()[K_w]:
+        y_qua = y_qua - 5
+    if pygame.key.get_pressed()[K_s]:
+        y_qua = y_qua + 5
+
+
+
+#Definição das formas geométricas --
+
+    pygame.draw.circle(tela, (0, 0, 225), (200, 300), (diametro_do_circulo))
+
+    ret_vermelho = pygame.draw.rect(tela, (255, 0, 0), (x_qua,y_qua, 50, 50))
+
+    ret_azul = pygame.draw.rect(tela, (0, 0, 255), (x_azul, y_azul, 50, 50))
+
+    line_green = pygame.draw.line(tela, (255,0,0), (1, y_comeco_linha), (x_comeco_linha, 1), 7)
+    x_comeco_linha = x_comeco_linha + 1
+    y_comeco_linha = y_comeco_linha + 1
+    if x_comeco_linha >= largura_tela and y_comeco_linha >= altura_tela:
+        x_comeco_linha = 0
+        y_comeco_linha = 0
+    if ret_vermelho.colliderect(ret_azul):
+        x_azul = randint(50, 550)
+        y_azul = randint(50, 350)
+
+
+    pygame.display.update()
