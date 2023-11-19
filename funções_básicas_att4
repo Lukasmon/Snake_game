@@ -1,0 +1,178 @@
+import pygame
+from pygame.locals import *
+from sys import exit
+from random import randint
+
+# -- (Criando cronometro) --
+
+pygame.init()
+
+# -- (Adicionando música) --
+pygame.mixer.music.set_volume(0.5)
+musica_de_fundo = pygame.mixer_music.load('musica_fundo.mp3')
+pygame.mixer.music.play(-1)
+barulho_colisao = pygame.mixer.Sound('smw_fireball.wav')
+barulho_colisao.set_volume(1)
+
+# -- (Inicializando código com as variáveis necessárias) --
+
+largura_tela = 600
+altura_tela = 400
+x_cobra = 300
+y_cobra = 200
+ret_vermelho_altura = 30
+ret_vermelho_largura = 30
+velocidade = 4
+morte = False
+
+# -- (Randomizando retângulo azul) --
+
+x_maca = randint(50, 550)
+y_maca = randint(50, 350)
+
+x_controle = 8
+y_controle = 0
+
+# -- (Velocidade do jogo/ Tamanho da tela/ Nome do jogo) --
+
+relogio = pygame.time.Clock()
+tela = pygame.display.set_mode((largura_tela, altura_tela))
+pygame.display.set_caption('Joguinho bolado')
+
+# -- (Mostrador do placar) --
+
+pontos = 0
+fonte = pygame.font.SysFont('georgia', 25, True, True)
+
+# -- (Aumentar corpo da cobra) --
+
+comprimento_inicial = 5
+
+def aumenta_cobra(lista_cobra):
+    for segmento in lista_cobra:
+        pygame.draw.rect(tela, (0,0,255), (segmento[0], segmento[1], 20, 20))
+
+# -- (Reiniciando o jogo) --
+
+def reiniciar_jogo():
+    global pontos, comprimento_inicial, x_cobra, y_cobra, x_maca, y_maca, morte, lista_cobra
+    pontos = 0
+    comprimento_inicial = 5
+    x_cobra = 300
+    y_cobra = 200
+    x_maca = randint(50, 550)
+    y_maca = randint(50, 350)
+    morte = False
+    lista_cobra = []
+
+# -- (laço de repetição) --
+
+lista_cobra = []
+while True:
+
+    relogio.tick(50)
+
+# -- (Cor da tela) --
+
+    tela.fill((255,255,250))
+    mensagem = f'Pontos:{pontos}'
+    texto_formatado = fonte.render(mensagem, True, (0,0,0))
+
+# -- (sair do jogo) --
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            exit()
+
+# -- (Movimentação no jogo) --
+
+        if event.type == KEYDOWN:
+            if event.key == K_a:
+                if x_controle == velocidade:         # -- (codigo para não andar na mesma linha) --
+                    pass
+                else:
+                    x_controle = - velocidade
+                    y_controle = 0
+            if event.key == K_d:
+                if x_controle == -velocidade:
+                    pass
+                else:
+                    x_controle = velocidade
+                    y_controle = 0
+            if event.key == K_s:
+                if y_controle == -velocidade:
+                    pass
+                else:
+                    x_controle = 0
+                    y_controle = velocidade
+            if event.key == K_w:
+                if y_controle == velocidade:
+                    pass
+                else:
+                    x_controle = 0
+                    y_controle = -velocidade
+
+    x_cobra = x_cobra + x_controle
+    y_cobra = y_cobra + y_controle
+
+    if pontos >= 300:
+        print("Acabou!")
+        pygame.quit()
+        exit()
+
+# -- (Definição das formas geométricas) --
+
+    cobra = pygame.draw.rect(tela, (245, 245, 220), (x_cobra,y_cobra, 20, 20))
+
+    maca = pygame.draw.rect(tela, (0, 255, 0), (x_maca, y_maca, 20, 20))
+    aumenta_cobra(lista_cobra)
+
+    # -- (criando corpo da cobra) --
+
+    lista_cabeca = []
+    lista_cabeca.append(x_cobra)
+    lista_cabeca.append(y_cobra)
+    lista_cobra.append(lista_cabeca)
+
+    if lista_cobra.count(lista_cabeca) > 1:
+        fonte2 = pygame.font.SysFont('georgia',20, True, False)
+        mensagem = ("Game Over! Precione (R) para jogar novamente")
+        texto_formatado = fonte2.render(mensagem, True,(255,255,255))
+        ret_texto = texto_formatado.get_rect()
+
+        morte = True
+        while morte:
+            tela.fill((0,0,0))
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == KEYDOWN:
+                    if event.key == K_r:
+                        reiniciar_jogo()
+                        morte = False
+
+            ret_texto.center = (largura_tela//2, altura_tela//2)
+            tela.blit(texto_formatado,ret_texto.topleft)
+            pygame.display.update()
+    if x_cobra > largura_tela:
+        x_cobra = 0
+    if x_cobra < 0:
+        x_cobra = largura_tela
+    if y_cobra < 0:
+        y_cobra = altura_tela
+    if y_cobra > altura_tela:
+        y_cobra = 0
+
+    if len (lista_cobra) > comprimento_inicial:
+        del lista_cobra[0]
+    if cobra.colliderect(maca):
+        x_maca = randint(50, 550)
+        y_maca = randint(50, 350)
+        pontos += 1
+        comprimento_inicial = comprimento_inicial + 4
+
+        barulho_colisao.play()
+    tela.blit(texto_formatado, (450, 40))
+    pygame.display.flip()
